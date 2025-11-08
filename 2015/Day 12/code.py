@@ -5,38 +5,56 @@ with open('input_jac.txt') as f:
     
 negatives = sum([int(n) for n in re.findall('-[0-9]+', data)])
 positives = sum([int(n) for n in re.findall('[^-|0-9]([0-9]+)', data)])
-print(negatives + positives)
+pt1 = negatives + positives
+print(pt1)
 
-# if encounter a second opening brace before a red flag then reset opening brace count and
-# remove last element from starts
-
-open_brackets = 0
-close_brackets = 0
-red_flag = False
-starts = []
-ends = []
-reds = []
-red_flag = False
-for x in range(len(data)):
-    if data[x] == '{' and  open_brackets == 0:
-        open_brackets += 1
-        starts.append(x)
-    elif data[x] == '{' and  open_brackets != 0:
-        open_brackets += 1
-    elif data[x] == '}' and close_brackets + 1 == open_brackets:
-        ends.append(x)
-        reds.append(red_flag)
-        open_brackets = 0
-        close_brackets = 0
-        red_flag = False
-    elif data[x] == '}' and close_brackets + 1 != open_brackets:
-        close_brackets += 1
-    elif data[x:x+6] == ':"red"':
-        red_flag = True
+red_indexes = [match.start() for match in re.finditer(':"red"', data)]
+open_indexes = []
+close_indexes = []
+for i in red_indexes:
+    j = i
+    opened_brackets = 0
+    closed_brackets = 0
+    while opened_brackets - closed_brackets != 1:
+        j -= 1
+        # print(f'{opened_brackets=}, {closed_brackets=}')
+        if data[j] == "}":
+            closed_brackets += 1
+        elif data[j] == "{":
+            opened_brackets += 1
+    open_indexes.append(j)
+    j = i
+    opened_brackets = 0
+    closed_brackets = 0
+    while closed_brackets - opened_brackets != 1:
+        j += 1
+        if data[j] == "}":
+            closed_brackets += 1
+        elif data[j] == "{":
+            opened_brackets += 1
+    close_indexes.append(j)
     
-pt2 = 0        
-for s, e, r in zip(starts, ends, reds):
-    if r:
-        pt2 += sum([int(n) for n in re.findall('-[0-9]+', data[s:e])]) + sum([int(n) for n in re.findall('[^-|0-9]([0-9]+)', data[s:e])])
+ignored = sorted(set([(start, end) for start, end in zip(open_indexes, close_indexes)]))
+ignored_no_repeats = []
+for i, (start_i, end_i) in enumerate(ignored):
+    subset = False
+    for j, (start_j, end_j) in enumerate(ignored):
+        if i != j:
+            start_gt = start_i > start_j
+            end_lt = end_i < end_j
+            if start_gt and end_lt:
+                subset = True
+    if not subset:
+        ignored_no_repeats.append((start_i, end_i))
+         
+for start, end in ignored_no_repeats:
+    negatives = sum([int(n) for n in re.findall('-[0-9]+', data[start:end])])
+    positives = sum([int(n) for n in re.findall('[^-|0-9]([0-9]+)', data[start:end])])
+    total = negatives + positives
+    pt1 -= total
+   
+print(pt1)
 
-print(negatives + positives - pt2)    
+        
+
+  
