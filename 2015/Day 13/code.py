@@ -31,21 +31,6 @@ for p in permutations(names, 8):
     total = sum([seating_map[pair] for pair in pairs])
     if total > pt1:
         pt1 = total
+        pt2 = total - min([seating_map[pair] for pair in pairs])
 print(pt1)
-
-for name in names:
-    seating_map[('James', name)] = 0
-    seating_map[(name, 'James')] = 0
-names.add('James')
-    
-pt2 = 0
-total = 0
-for p in permutations(names, 9):
-    pairs = list(zip(p, p[1:]))
-    pairs.append((p[0],p[-1]))
-    total = sum([seating_map[pair] for pair in pairs])
-    if total > pt2:
-        pt2 = total
 print(pt2)
-
-
